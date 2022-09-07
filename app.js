@@ -10,4 +10,4 @@ app.use(express.static(path.join(__dirname, './index.html')));
 server = new http.createServer(app);
 
 server.on('error', err => console.log('Server error:', err));
-server.listen(process.env.PORT);
+server.listen('8000');
