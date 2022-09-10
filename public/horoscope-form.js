@@ -16,6 +16,7 @@ function HoroscopeForm(props) {
     'May', 'June', 'July', 'August', 'September',
     'October', 'November', 'December'])
   const [horoscopes, setHoroscopes] = useState([]);
+  const [tableFields, setTableFields] = useState([]);
 
 
   function renderOptions(options, upper) {
@@ -28,7 +29,7 @@ function HoroscopeForm(props) {
   }
 
   function setValue(setFunction, event) {
-    console.log(field, event.target.value);
+    console.log(event.target.value);
     setFunction(event.target.value);
   }
 
@@ -50,6 +51,7 @@ function HoroscopeForm(props) {
       mode: 'cors'
     })
     console.log('horoscopes', horoscopes);
+    setTableFields(horoscopes.length ? Object.keys(horoscopes[0]) : []);
     setHoroscopes(horoscopes);
   }
 
@@ -73,7 +75,7 @@ function HoroscopeForm(props) {
         onClick={() => submit()}>Submit</button>
     </div>
     <div id="horoscope-list">
-      <HoroscopeGrid columns={Object.keys(horoscopes)} values={Object.values(horoscopes)} />
+      <HoroscopeGrid columns={tableFields} values={horoscopes} />
     </div>
   </div>
 }
