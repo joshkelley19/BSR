@@ -18,9 +18,9 @@ class HoroscopeForm extends React.Component {
     };
   }
 
-  renderOptions(optionsStr) {
+  renderOptions(optionsStr, upper) {
     const optionsList = this.state[optionsStr].map((val, index) => {
-      return (<option key={index} value={val}>{val}</option>);
+      return (<option key={index} value={upper ? val.toUpperCase() : val}>{val}</option>);
     });
     optionsList.unshift((<option id="select-placeholder" key="select-placeholder" disabled selected value> -- select an option -- </option>
     ))
@@ -57,12 +57,12 @@ class HoroscopeForm extends React.Component {
       <label htmlFor="sign-select" className="form-label">Sign</label>
       <select id="sign-select" className="form-select form-select-med" aria-label="Sign select"
         onChange={(e) => this.setValue('sign', e)}>
-        {this.renderOptions('signs')}
+        {this.renderOptions('signs', true)}
       </select>
       <label htmlFor="month-select" className="form-label">Horoscope</label>
       <select id="month-select" className="form-select form-select-med" aria-label="Month select"
         onChange={(e) => this.setValue('month', e)}>
-        {this.renderOptions('months')}
+        {this.renderOptions('months', true)}
       </select>
       <label htmlFor="horoscope-input" className="form-label">Horoscope</label>
       <textarea id="horoscope-input" className="form-control" maxLength="255"
