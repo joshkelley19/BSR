@@ -36,14 +36,18 @@ class HoroscopeForm extends React.Component {
     console.log('Submission', this.state);
     const {sign: zodiac, horoscope: reading, month} = this.state;
     fetch('https://becoming-spiritually-rich.herokuapp.com/horoscope', {
-      body: {
+      body: JSON.stringify({
         zodiac,
         reading,
         month,
         //TODO dynamically pull year
         year: '2022'
+      }),
+      headers: {
+        'Content-Type': 'application/json'
       },
-      method: 'POST'
+      method: 'POST',
+      mode: 'cors'
     })
   }
 
