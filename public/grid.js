@@ -1,16 +1,18 @@
 // import React from "react"; 
 // import { Grid } from "gridjs";
 // import "gridjs/dist/theme/mermaid.css";
+// const { useRef } = React;
 
+console.log('use ref', useRef);
 export function HoroscopeGrid (props) {
-  const wrapperRef = useRef(null);
+  const wrapperRef = React.useRef(null);
 
-  const grid = new Grid({
+  const grid = new gridjs.Grid({
     columns: props.columns,
     data: props.values
   });
   
-  useEffect(() => {
+  React.useEffect(() => {
     grid.render(wrapperRef.current);
   });
   

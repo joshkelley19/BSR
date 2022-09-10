@@ -73,7 +73,7 @@ function HoroscopeForm(props) {
         onClick={() => submit()}>Submit</button>
     </div>
     <div id="horoscope-list">
-      {/* <HoroscopeGrid columns={Object.keys(this.state.horoscopes)} values={Object.values(this.state.horoscopes)} /> */}
+      <HoroscopeGrid columns={Object.keys(horoscopes)} values={Object.values(horoscopes)} />
     </div>
   </div>
 }
