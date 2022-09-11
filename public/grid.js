@@ -7,23 +7,23 @@ console.log('use ref', useRef);
 export function HoroscopeGrid(props) {
   const wrapperRef = React.useRef(null);
 
-  const grid = new gridjs.Grid({
-    columns: ['name', 'date']/* props.columns */,
-    data: [['Josh', 'today']]/* props.values */
-  });
 
   React.useEffect(() => {
-    if (props.values.length) {
-      console.log('new grid props', props);
-      grid.updateConfig({
-        search: true,
-        columns: props.columns,
-        data: props.values
-      }).forceRender();
-    } else {
-      grid.render(wrapperRef.current);
-    }
-  });
+    const grid = new gridjs.Grid({
+      columns: ['name', 'date']/* props.columns */,
+      data: [['Josh', 'today']]/* props.values */
+    });
+    console.log('new grid props', props);
+    grid.render(wrapperRef.current);
+  }, []);
+
+  if(props.values.length) {
+    grid.updateConfig({
+      search: true,
+      columns: props.columns,
+      data: props.values
+    }).forceRender();
+  }
 
   return <div id="grid-wrapper-el" ref={wrapperRef} />;
 };
