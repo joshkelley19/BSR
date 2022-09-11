@@ -29,7 +29,6 @@ function HoroscopeForm(props) {
   }
 
   function setValue(setFunction, event) {
-    console.log(event.target.value);
     setFunction(event.target.value);
   }
 
@@ -42,14 +41,19 @@ function HoroscopeForm(props) {
       year: '2022'
     }
     console.log('Submission', body);
-    const horoscopes = await fetch('https://becoming-spiritually-rich.herokuapp.com/horoscope', {
-      body: JSON.stringify(body),
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      method: 'POST',
-      mode: 'cors'
-    })
+    let horoscopes = [];
+    try {
+      horoscopes = await fetch('https://becoming-spiritually-rich.herokuapp.com/horoscope', {
+        body: JSON.stringify(body),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        method: 'POST',
+        mode: 'cors'
+      });
+    } catch (e) {
+      console.error('fetch error', e);
+    }
     console.log('horoscopes', horoscopes);
     setTableFields(horoscopes.length ? Object.keys(horoscopes[0]) : []);
     setHoroscopes(horoscopes);
