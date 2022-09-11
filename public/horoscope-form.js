@@ -41,9 +41,9 @@ function HoroscopeForm(props) {
       year: '2022'
     }
     console.log('Submission', body);
-    let horoscopes = [];
+    let horoscopeVal = [];
     try {
-      horoscopes = await fetch('https://becoming-spiritually-rich.herokuapp.com/horoscope', {
+      const res = await fetch('https://becoming-spiritually-rich.herokuapp.com/horoscope', {
         body: JSON.stringify(body),
         headers: {
           'Content-Type': 'application/json'
@@ -51,12 +51,13 @@ function HoroscopeForm(props) {
         method: 'POST',
         mode: 'cors'
       });
+      horoscopeVal = res.json();
     } catch (e) {
       console.error('fetch error', e);
     }
     console.log('horoscopes', horoscopes);
-    setTableFields(horoscopes.length ? Object.keys(horoscopes[0]) : []);
-    setHoroscopes(horoscopes);
+    setTableFields(horoscopeVal.length ? Object.keys(horoscopeVal[0]) : []);
+    setHoroscopes(horoscopeVal);
   }
 
   return <div>
