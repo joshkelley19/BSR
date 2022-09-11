@@ -51,7 +51,7 @@ function HoroscopeForm(props) {
         method: 'POST',
         mode: 'cors'
       });
-      horoscopeVal = res.json();
+      horoscopeVal = await res.json();
     } catch (e) {
       console.error('fetch error', e);
     }
