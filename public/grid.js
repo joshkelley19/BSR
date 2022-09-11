@@ -14,6 +14,7 @@ export function HoroscopeGrid(props) {
 
   React.useEffect(() => {
     if (props.values.length) {
+      console.log('new grid props', props);
       grid.updateConfig({
         search: true,
         columns: props.columns,
