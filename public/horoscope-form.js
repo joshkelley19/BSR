@@ -32,7 +32,7 @@ function HoroscopeForm(props) {
     setFunction(event.target.value);
   }
 
-  async function submit() {
+  async function submitHoroscope() {
     const body = {
       zodiac: sign,
       reading: horoscope,
@@ -58,6 +58,17 @@ function HoroscopeForm(props) {
     console.log('horoscopes', horoscopes);
     setTableFields(horoscopeVal.length ? Object.keys(horoscopeVal[0]) : []);
     setHoroscopes(horoscopeVal);
+    setValues();
+  }
+
+  function setValues(horoscopeObj) {
+    if(horoscopeObj) {
+
+    } else {
+      setHoroscope('');
+      setMonth('');
+      setSign('');
+    }
   }
 
   return <div>
@@ -68,7 +79,7 @@ function HoroscopeForm(props) {
         onChange={(e) => setValue(setSign, e)}>
         {renderOptions(signs, true)}
       </select>
-      <label htmlFor="month-select" className="form-label">Horoscope</label>
+      <label htmlFor="month-select" className="form-label">Month</label>
       <select id="month-select" className="form-select form-select-med" aria-label="Month select"
         onChange={(e) => setValue(setMonth, e)}>
         {renderOptions(months, true)}
@@ -77,7 +88,7 @@ function HoroscopeForm(props) {
       <textarea id="horoscope-input" className="form-control" maxLength="255"
         onChange={(e) => setValue(setHoroscope, e)} />
       <button type="button" className="btn btn-primary my-2"
-        onClick={() => submit()}>Submit</button>
+        onClick={() => submitHoroscope()}>Submit</button>
     </div>
     <div id="horoscope-list">
       <HoroscopeGrid columns={tableFields} values={horoscopes} />
