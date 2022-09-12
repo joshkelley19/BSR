@@ -3,7 +3,8 @@ export function HoroscopeGrid(props) {
   const wrapperRef = React.useRef(null);
   const [grid, setGrid] = useState(new gridjs.Grid({
     columns: ['name', 'date']/* props.columns */,
-    data: [['Josh', 'today']]/* props.values */
+    data: [['Josh', 'today']]/* props.values */,
+    sort: true
   }));
 
   React.useEffect(() => {
