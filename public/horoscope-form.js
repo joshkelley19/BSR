@@ -1,9 +1,32 @@
 // 'use strict';
 const { useState, useEffect } = React;
 
-// import HoroscopeGrid from "./grid";
-
 const e = React.createElement;
+
+const gridTypesConfig = [{
+  textVal: 'Categories by type',
+  val: 'CATEGORY'
+}, {
+  textVal: 'All Categories',
+  val: 'ALL'
+}, {
+  textVal: 'App Preview',
+  val: 'APP'
+}]
+
+const renderGridTypes = function renderGridTypes(gridTypesConfig, type, setGridType) {
+  return gridTypesConfig.map(config => {
+    const configId = `grid-type-option-${config.val.toLowerCase()}`;
+    return <React.Fragment>
+      <input type="radio" class="btn-check" name="grid-type" id={configId} autoComplete="off" />
+      <label className={`btn btn-${type == config.val ? '' : `outline-`}primary`} for={configId} onClick={() => setGridType(config.val)}>{config.textVal}</label>
+    </React.Fragment>
+  })
+}.bind(null, gridTypesConfig);
+
+function setValue(setFunction, event) {
+  setFunction(event.target.value);
+}
 
 async function getAllCategoriesByType(type, columnSetter, valueSetter) {
   const categories = await (await fetch(`http://localhost:8080/api/horoscope/categories/${type}`)).json();
@@ -13,50 +36,64 @@ async function getAllCategoriesByType(type, columnSetter, valueSetter) {
   }
 }
 
-function setCategoryFormFields(setType, setSign, setStartDate, category) {
-  setType(category.type);
+async function getAllCategories(columnSetter, valueSetter) {
+  const categories = await (await fetch(`http://localhost:8080/api/horoscope/categories/all`)).json();
+  if (categories.length) {
+    columnSetter(Object.keys(categories[0]));
+    valueSetter(categories);
+  }
+}
+
+function renderOptions(options, upper) {
+  const optionsList = options.map((val, index) => {
+    return (<option key={index} value={upper ? val.toUpperCase() : val}>{val}</option>);
+  });
+  optionsList.unshift((<option id="select-placeholder" key="select-placeholder" disabled selected value> -- select an option -- </option>
+  ))
+  return optionsList;
+}
+
+function setCategoryFormFields(setSign, setInterval, setStartDate, category) {
   setSign(category.sign);
-  // TODO add 1 second
-  setStartDate(category.endDate + 1);
+  setInterval(category.interval);
+  const startDate = new Date(category.endDate);
+  startDate.setMinutes(startDate.getMinutes() + 1);
+  console.log(startDate);
+  setStartDate(startDate.toISOString().slice(0, -2));
+  console.log('Category', category);
 }
 
 function HoroscopeForm(props) {
-  const [sign, setSign] = useState(null);
+  const [sign, setSign] = useState('');
   const [header, setHeader] = useState('');
   const [horoscope, setHoroscope] = useState('');
-  const [interval, setInterval] = useState('');
+  const [interval, setInterval] = useState('NONE');
   const [type, setType] = useState('');
   // TODO pull categories and signs from backend
   const [signs] = useState(['Aries', 'Taurus', 'Gemini', 'Cancer',
-    'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius',
-    'Capricorn', 'Aquarius', 'Pisces']);
+    'Leo', 'Virgo', 'Libra', 'Scorpio',
+    'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']);
   const [intervals] = useState(['None', 'Monthly', 'Weekly', 'Daily']);
   const [types] = useState(["Horoscope", "Sun", "Current Moon", "Rising", "New Moon",
     "Full Moon", "Mercury", "Venus", "Earth", "Mars",
     "Saturn", "Jupiter", "Uranus", "Neptune", "Pluto"]);
   const [tableValues, setTableValues] = useState([]);
   const [tableFields, setTableFields] = useState([]);
-  const [startDate, setStartDate] = useState(null)
-  const [endDate, setEndDate] = useState(null)
+  const [startDate, setStartDate] = useState((new Date()));
+  const [endDate, setEndDate] = useState(new Date());
+  const [gridType, setGridType] = useState('CATEGORY');
 
   useEffect(() => {
-    if (type) {
-      getAllCategoriesByType(type, setTableFields, setTableValues);
+    switch (gridType) {
+      case 'CATEGORY': if (type) {
+        getAllCategoriesByType(type, setTableFields, setTableValues);
+      }
+      break;
+      case 'ALL': getAllCategories(setTableFields, setTableValues); break;
+      case 'APP': //TODO get categories for app
+        break;
     }
-  }, [type])
-
-  function renderOptions(options, upper) {
-    const optionsList = options.map((val, index) => {
-      return (<option key={index} value={upper ? val.toUpperCase() : val}>{val}</option>);
-    });
-    optionsList.unshift((<option id="select-placeholder" key="select-placeholder" disabled selected value> -- select an option -- </option>
-    ))
-    return optionsList;
-  }
-
-  function setValue(setFunction, event) {
-    setFunction(event.target.value);
-  }
+  }, [type, gridType])
 
   async function submitHoroscope() {
     const body = {
@@ -65,16 +102,14 @@ function HoroscopeForm(props) {
       header,
       description: horoscope,
       increment: interval === 'NONE' ? null : interval,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
+      startDate: new Date(startDate).toISOString(),
+      endDate: new Date(endDate).toISOString(),
       active: true,
       category: null
     }
     console.log('Submission', body);
-    let horoscopeVal = [];
     try {
-      // const res = await fetch('https://becoming-spiritually-rich.herokuapp.com/horoscope', {
-      const res = await fetch('http://localhost:8080/api/horoscope', {
+      await fetch('http://localhost:8080/api/horoscope', {
         body: JSON.stringify(body),
         headers: {
           'Content-Type': 'application/json'
@@ -82,11 +117,7 @@ function HoroscopeForm(props) {
         method: 'POST',
         mode: 'cors'
       });
-      horoscopeVal = await res.json();
-      console.log('horoscopes', horoscopeVal);
-      setTableFields(horoscopeVal.length ? Object.keys(horoscopeVal[0]) : []);
-      setTableValues(horoscopeVal);
-      // setValues();
+      getAllCategoriesByType(type, setTableFields, setTableValues);
     } catch (e) {
       console.error('fetch error', e);
     }
@@ -119,11 +150,15 @@ function HoroscopeForm(props) {
       <div className="d-flex flex-row">
         <div className="form-group">
           <label htmlFor="start-date" className="form-label">Start Date</label>
-          <input type="datetime-local" className="form-control" onChange={(e) => setValue(setStartDate, e)} value={startDate} />
+          <input type="datetime-local" className="form-control"
+            onChange={(e) => setValue(setStartDate, e)} value={startDate} />
         </div>
         <div className="form-group px-3">
-          {!interval || interval == 'NONE' ? <div><label htmlFor="end-date" className="form-label">End Date</label>
-            <input type="datetime-local" className="form-control" onChange={(e) => setValue(setEndDate, e)} value={endDate} /></div> : ''}
+          {!interval || interval == 'NONE' ?
+            <div>
+              <label htmlFor="end-date" className="form-label">End Date</label>
+              <input type="datetime-local" className="form-control"
+                onChange={(e) => setValue(setEndDate, e)} value={endDate} /></div> : ''}
         </div>
       </div>
 
@@ -140,8 +175,14 @@ function HoroscopeForm(props) {
       <button type="button" className="btn btn-primary my-2"
         onClick={() => submitHoroscope()}>Submit</button>
     </div>
+
+    <div class="btn-group grid-type-selection" role="group" aria-label="Grid Types">
+      {renderGridTypes(gridType, setGridType)}
+    </div>
+
     <div id="horoscope-list">
-      <HoroscopeGrid columns={tableFields} values={tableValues} blacklist={['id', 'name', 'active']} setCategory={setCategoryFormFields.bind(null, setType, setSign, setStartDate)} />
+      <HoroscopeGrid columns={tableFields} values={tableValues} blacklist={['id', 'name', 'active']}
+        whitelist={['interval']} setCategory={setCategoryFormFields.bind(null, setSign, setInterval, setStartDate)} />
     </div>
   </div>
 }

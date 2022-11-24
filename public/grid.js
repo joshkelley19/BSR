@@ -1,10 +1,11 @@
 
-function createGridConfig(columns, data, blacklist = [], customMappers = {}, selectionFunc = null) {
+function createGridConfig(columns, data, blacklist = [], whitelist = [], customMappers = {}, selectionFunc = null) {
   // TODO add date formatters
-  const mappedColumns = columns.filter(c => !blacklist.includes(c)).map(c => Object.assign({}, {
+  const mappedColumns = columns.filter(c => !blacklist.includes(c)).concat(whitelist).map(c => Object.assign({}, {
     id: c,
     name: c,
-    sort: true
+    sort: true,
+    formatter: (cell, row, column) => column.name == 'postings' ? gridjs.html(`<div class="overflow-scroll grid-cell">${cell}</div?`) : cell
   },
     !!customMappers[c] && { data: customMappers[c] }));
 
@@ -15,7 +16,7 @@ function createGridConfig(columns, data, blacklist = [], customMappers = {}, sel
       className: 'btn btn-primary my-2',
       onClick: () => {
         row = row.toArray();
-        selectionFunc(Object.assign({}, {type: row[1], sign: row[2], endDate: row[4]}))
+        selectionFunc(Object.assign({}, { type: row[1], sign: row[2], endDate: row[4], interval: row[6] }))
       }
     }, 'Select')
   })
@@ -28,17 +29,20 @@ function createGridConfig(columns, data, blacklist = [], customMappers = {}, sel
 
 function getCustomMappers() {
   return {
-    postings: (category) => {
-      return category.postings[0].description;
-    }
+    postings: (category) => category.postings[0].description,
+    // TODO remove when all db entries have converted to not use null
+    interval: (category) => category.postings[0].increment || 'NONE'
   }
 }
 
-export function HoroscopeGrid({ columns, values, blacklist, setCategory }) {
+export function HoroscopeGrid({ columns, values, blacklist, whitelist, setCategory }) {
   const wrapperRef = React.useRef(null);
   const [grid, setGrid] = useState(new gridjs.Grid({
     columns: [],
-    data: [[]]
+    data: [[]],
+    className: {
+      td: 'overflow-scroll'
+    }
   }));
 
   React.useEffect(() => {
@@ -47,7 +51,7 @@ export function HoroscopeGrid({ columns, values, blacklist, setCategory }) {
 
   React.useEffect(() => {
     console.log('new grid props', columns, values, grid);
-    const config = createGridConfig(columns, values, blacklist, getCustomMappers(), setCategory);
+    const config = createGridConfig(columns, values, blacklist, whitelist, getCustomMappers(), setCategory);
     grid.updateConfig(config).forceRender();
   }, [values, columns]);
 
