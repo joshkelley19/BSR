@@ -1,6 +1,5 @@
 // 'use strict';
 const { useState, useEffect } = React;
-
 const e = React.createElement;
 
 const gridTypesConfig = [{
@@ -17,9 +16,9 @@ const gridTypesConfig = [{
 const renderGridTypes = function renderGridTypes(gridTypesConfig, type, setGridType) {
   return gridTypesConfig.map(config => {
     const configId = `grid-type-option-${config.val.toLowerCase()}`;
-    return <React.Fragment>
-      <input type="radio" class="btn-check" name="grid-type" id={configId} autoComplete="off" />
-      <label className={`btn btn-${type == config.val ? '' : `outline-`}primary`} for={configId} onClick={() => setGridType(config.val)}>{config.textVal}</label>
+    return <React.Fragment key={`input-${configId}`}>
+      <input type="radio" id={configId} className="btn-check" name="grid-type" autoComplete="off" />
+      <label className={`btn btn-${type == config.val ? '' : `outline-`}primary`} htmlFor={configId} onClick={() => setGridType(config.val)}>{config.textVal}</label>
     </React.Fragment>
   })
 }.bind(null, gridTypesConfig);
@@ -28,16 +27,16 @@ function setValue(setFunction, event) {
   setFunction(event.target.value);
 }
 
-async function getAllCategoriesByType(type, columnSetter, valueSetter) {
-  const categories = await (await fetch(`http://localhost:8080/api/horoscope/categories/${type}`)).json();
+async function getAllCategoriesByType(type, columnSetter, valueSetter, baseUrl) {
+  const categories = await (await fetch(`${baseUrl}/api/horoscope/categories/${type}`)).json();
   if (categories.length) {
     columnSetter(Object.keys(categories[0]));
     valueSetter(categories);
   }
 }
 
-async function getAllCategories(columnSetter, valueSetter) {
-  const categories = await (await fetch(`http://localhost:8080/api/horoscope/categories/all`)).json();
+async function getAllCategories(columnSetter, valueSetter, baseUrl) {
+  const categories = await (await fetch(`${baseUrl}/api/horoscope/categories/all`)).json();
   if (categories.length) {
     columnSetter(Object.keys(categories[0]));
     valueSetter(categories);
@@ -48,7 +47,7 @@ function renderOptions(options, upper) {
   const optionsList = options.map((val, index) => {
     return (<option key={index} value={upper ? val.toUpperCase() : val}>{val}</option>);
   });
-  optionsList.unshift((<option id="select-placeholder" key="select-placeholder" disabled selected value> -- select an option -- </option>
+  optionsList.unshift((<option id="select-placeholder" key="select-placeholder" disabled value> -- select an option -- </option>
   ))
   return optionsList;
 }
@@ -74,22 +73,50 @@ function HoroscopeForm(props) {
     'Leo', 'Virgo', 'Libra', 'Scorpio',
     'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']);
   const [intervals] = useState(['None', 'Monthly', 'Weekly', 'Daily']);
-  const [types] = useState(["Horoscope", "Sun", "Current Moon", "Rising", "New Moon",
-    "Full Moon", "Mercury", "Venus", "Earth", "Mars",
-    "Saturn", "Jupiter", "Uranus", "Neptune", "Pluto"]);
+  const [types] = useState(['Horoscope', 'Sun', 'Current Moon', 'Rising', 'New Moon',
+    'Full Moon', 'Mercury', 'Venus', 'Earth', 'Mars',
+    'Saturn', 'Jupiter', 'Uranus', 'Neptune', 'Pluto']);
   const [tableValues, setTableValues] = useState([]);
   const [tableFields, setTableFields] = useState([]);
   const [startDate, setStartDate] = useState((new Date()));
   const [endDate, setEndDate] = useState(new Date());
   const [gridType, setGridType] = useState('CATEGORY');
+  const [baseUrl, setBaseUrl] = useState('');
+
+  useEffect(() => {
+    if (!firebase.apps.length) {
+      // TODO import from file
+      
+      const firebaseConfig = {
+        apiKey: "AIzaSyALkwYKFFoRCzuraR-_XV3sVvIAKzMkGrE",
+        authDomain: "becomingspirituallyrich-fe537.firebaseapp.com",
+        projectId: "becomingspirituallyrich-fe537",
+        storageBucket: "becomingspirituallyrich-fe537.appspot.com",
+        messagingSenderId: "462765930653",
+        appId: "1:462765930653:web:41ddaf1ea2e9ceb9f63c74",
+        measurementId: "G-MXLYN1XPGG"
+      };
+
+      // Initialize Firebase
+      const app = firebase.initializeApp(firebaseConfig);
+      const analytics = firebase.analytics();
+      console.log('firebase', app, analytics);
+      firebase.firestore().collection('endpoints').get().then(doc => {
+        const endpoints = doc.docs[0].data().endpoints;
+        const ep = endpoints.find(e => !!window.location.hostname.match(e.key));
+        setBaseUrl(ep.val);
+        console.log('Endpoints', endpoints, ep);
+      });
+    }
+  }, [])
 
   useEffect(() => {
     switch (gridType) {
       case 'CATEGORY': if (type) {
-        getAllCategoriesByType(type, setTableFields, setTableValues);
+        getAllCategoriesByType(type, setTableFields, setTableValues, baseUrl);
       }
-      break;
-      case 'ALL': getAllCategories(setTableFields, setTableValues); break;
+        break;
+      case 'ALL': getAllCategories(setTableFields, setTableValues, baseUrl); break;
       case 'APP': //TODO get categories for app
         break;
     }
@@ -109,7 +136,7 @@ function HoroscopeForm(props) {
     }
     console.log('Submission', body);
     try {
-      await fetch('http://localhost:8080/api/horoscope', {
+      await fetch(`${getBaseUrl()}/api/horoscope`, {
         body: JSON.stringify(body),
         headers: {
           'Content-Type': 'application/json'
@@ -176,7 +203,7 @@ function HoroscopeForm(props) {
         onClick={() => submitHoroscope()}>Submit</button>
     </div>
 
-    <div class="btn-group grid-type-selection" role="group" aria-label="Grid Types">
+    <div className="btn-group grid-type-selection" role="group" aria-label="Grid Types">
       {renderGridTypes(gridType, setGridType)}
     </div>
 
