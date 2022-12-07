@@ -27,16 +27,28 @@ function setValue(setFunction, event) {
   setFunction(event.target.value);
 }
 
-async function getAllCategoriesByType(type, columnSetter, valueSetter, baseUrl) {
-  const categories = await (await fetch(`${baseUrl}/api/horoscope/categories/${type}`)).json();
-  if (categories.length) {
-    columnSetter(Object.keys(categories[0]));
-    valueSetter(categories);
+// TODO convert to getCategoryUrl() with single categories loading and error message
+async function getAllCategoriesByType(type, columnSetter, valueSetter, errorMessageSetter, baseUrl) {
+  try {
+    const categories = await (await fetch(`${baseUrl}/api/horoscope/categories/${type}`)).json();
+    loadCategories(columnSetter, valueSetter, categories)
+  } catch (e) {
+    errorMessageSetter(`Failed to load categories: ${e.toString()}`);
+    console.error('Error loading categories', e);
   }
 }
 
-async function getAllCategories(columnSetter, valueSetter, baseUrl) {
-  const categories = await (await fetch(`${baseUrl}/api/horoscope/categories/all`)).json();
+async function getAllCategories(columnSetter, valueSetter, errorMessageSetter, baseUrl) {
+  try {
+    const categories = await (await fetch(`${baseUrl}/api/horoscope/categories/all`)).json();
+    loadCategories(columnSetter, valueSetter, categories);
+  } catch (e) {
+    errorMessageSetter(`Failed to load categories: ${e.toString()}`);
+    console.error('Error loading categories', e);
+  }
+}
+
+function loadCategories(columnSetter, valueSetter, categories) {
   if (categories.length) {
     columnSetter(Object.keys(categories[0]));
     valueSetter(categories);
@@ -82,11 +94,12 @@ function HoroscopeForm(props) {
   const [endDate, setEndDate] = useState(new Date());
   const [gridType, setGridType] = useState('CATEGORY');
   const [baseUrl, setBaseUrl] = useState('');
+  const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
     if (!firebase.apps.length) {
       // TODO import from file
-      
+
       const firebaseConfig = {
         apiKey: "AIzaSyALkwYKFFoRCzuraR-_XV3sVvIAKzMkGrE",
         authDomain: "becomingspirituallyrich-fe537.firebaseapp.com",
@@ -113,10 +126,10 @@ function HoroscopeForm(props) {
   useEffect(() => {
     switch (gridType) {
       case 'CATEGORY': if (type) {
-        getAllCategoriesByType(type, setTableFields, setTableValues, baseUrl);
+        getAllCategoriesByType(type, setTableFields, setTableValues, setErrorMessage, baseUrl);
       }
         break;
-      case 'ALL': getAllCategories(setTableFields, setTableValues, baseUrl); break;
+      case 'ALL': getAllCategories(setTableFields, setTableValues, setErrorMessage, baseUrl); break;
       case 'APP': //TODO get categories for app
         break;
     }
@@ -152,6 +165,10 @@ function HoroscopeForm(props) {
 
   return <div>
     <h1 className="text-center">Becoming Spiritually Rich</h1>
+    {errorMessage ? <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      {errorMessage}
+      <button type="button" class="btn-close" onClick={() => setErrorMessage(null)} data-bs-dismiss="alert" aria-label="Close"></button>
+    </div> : <div></div>}
     <div id="horoscope-fields">
       <div className="form-group">
         <label htmlFor="type-select" className="form-label">Type</label>
