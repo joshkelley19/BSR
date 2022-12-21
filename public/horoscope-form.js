@@ -59,7 +59,7 @@ function renderOptions(options, upper) {
   const optionsList = options.map((val, index) => {
     return (<option key={index} value={upper ? val.toUpperCase() : val}>{val}</option>);
   });
-  optionsList.unshift((<option id="select-placeholder" key="select-placeholder" disabled value> -- select an option -- </option>
+  optionsList.unshift((<option id="select-placeholder" key="select-placeholder" value selected> -- select an option -- </option>
   ))
   return optionsList;
 }
@@ -141,7 +141,7 @@ function HoroscopeForm(props) {
       sign,
       header,
       description: horoscope,
-      increment: interval === 'NONE' ? null : interval,
+      increment: interval,
       startDate: new Date(startDate).toISOString(),
       endDate: new Date(endDate).toISOString(),
       active: true,
@@ -149,7 +149,7 @@ function HoroscopeForm(props) {
     }
     console.log('Submission', body);
     try {
-      await fetch(`${getBaseUrl()}/api/horoscope`, {
+      await fetch(`${baseUrl}/api/horoscope`, {
         body: JSON.stringify(body),
         headers: {
           'Content-Type': 'application/json'
@@ -157,7 +157,7 @@ function HoroscopeForm(props) {
         method: 'POST',
         mode: 'cors'
       });
-      getAllCategoriesByType(type, setTableFields, setTableValues);
+      getAllCategoriesByType(type, setTableFields, setTableValues, setErrorMessage, baseUrl);
     } catch (e) {
       console.error('fetch error', e);
     }
