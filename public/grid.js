@@ -40,6 +40,9 @@ export function HoroscopeGrid({ columns, values, blacklist, whitelist, setCatego
   const [grid, setGrid] = useState(new gridjs.Grid({
     columns: [],
     data: [[]],
+    pagination: {
+      limit: 20
+    },
     className: {
       td: 'overflow-scroll'
     }
@@ -50,7 +53,6 @@ export function HoroscopeGrid({ columns, values, blacklist, whitelist, setCatego
   }, []);
 
   React.useEffect(() => {
-    console.log('new grid props', columns, values, grid);
     const config = createGridConfig(columns, values, blacklist, whitelist, getCustomMappers(), setCategory);
     grid.updateConfig(config).forceRender();
   }, [values, columns]);
