@@ -1,6 +1,9 @@
-// 'use strict';
-const { useState, useEffect } = React;
-const e = React.createElement;
+import React, { useState, useEffect } from 'react';
+import { initializeApp, getApps } from '@firebase/app';
+import { getAnalytics } from '@firebase/analytics';
+import { getDocs, collection, getFirestore } from '@firebase/firestore';
+import { format } from 'date-fns';
+import { HoroscopeGrid } from './grid';
 
 const gridTypesConfig = [{
   textVal: 'Categories by type',
@@ -29,12 +32,14 @@ function setValue(setFunction, event) {
 
 // TODO convert to getCategoryUrl() with single categories loading and error message
 async function getAllCategoriesByType(type, columnSetter, valueSetter, errorMessageSetter, baseUrl) {
-  try {
-    const categories = await (await fetch(`${baseUrl}/api/horoscope/categories/${type}`)).json();
-    loadCategories(columnSetter, valueSetter, categories)
-  } catch (e) {
-    errorMessageSetter(`Failed to load categories: ${e.toString()}`);
-    console.error('Error loading categories', e);
+  if (type) {
+    try {
+      const categories = await (await fetch(`${baseUrl}/api/horoscope/categories/${type}`)).json();
+      loadCategories(columnSetter, valueSetter, categories)
+    } catch (e) {
+      errorMessageSetter(`Failed to load categories: ${e.toString()}`);
+      console.error('Error loading categories', e);
+    }
   }
 }
 
@@ -55,11 +60,11 @@ function loadCategories(columnSetter, valueSetter, categories) {
   }
 }
 
-function renderOptions(options, upper) {
+function renderOptions(options, upper, label) {
   const optionsList = options.map((val, index) => {
     return (<option key={index} value={upper ? val.toUpperCase() : val}>{val}</option>);
   });
-  optionsList.unshift((<option id="select-placeholder" key="select-placeholder" value selected> -- select an option -- </option>
+  optionsList.unshift((<option id="select-placeholder" key="select-placeholder"> {label} </option>
   ))
   return optionsList;
 }
@@ -74,7 +79,7 @@ function setCategoryFormFields(setSign, setInterval, setStartDate, category) {
   console.log('Category', category);
 }
 
-function HoroscopeForm(props) {
+export const HoroscopeForm = (props) => {
   const [sign, setSign] = useState('');
   const [header, setHeader] = useState('');
   const [horoscope, setHoroscope] = useState('');
@@ -97,29 +102,36 @@ function HoroscopeForm(props) {
   const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
-    if (!firebase.apps.length) {
-      // TODO import from file
+    if (!getApps().length) {
+      const initApp = async () => {
+        // TODO import from file
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyALkwYKFFoRCzuraR-_XV3sVvIAKzMkGrE",
-        authDomain: "becomingspirituallyrich-fe537.firebaseapp.com",
-        projectId: "becomingspirituallyrich-fe537",
-        storageBucket: "becomingspirituallyrich-fe537.appspot.com",
-        messagingSenderId: "462765930653",
-        appId: "1:462765930653:web:41ddaf1ea2e9ceb9f63c74",
-        measurementId: "G-MXLYN1XPGG"
-      };
+        const firebaseConfig = {
+          apiKey: "AIzaSyALkwYKFFoRCzuraR-_XV3sVvIAKzMkGrE",
+          authDomain: "becomingspirituallyrich-fe537.firebaseapp.com",
+          projectId: "becomingspirituallyrich-fe537",
+          storageBucket: "becomingspirituallyrich-fe537.appspot.com",
+          messagingSenderId: "462765930653",
+          appId: "1:462765930653:web:41ddaf1ea2e9ceb9f63c74",
+          measurementId: "G-MXLYN1XPGG"
+        };
 
-      // Initialize Firebase
-      const app = firebase.initializeApp(firebaseConfig);
-      const analytics = firebase.analytics();
-      console.log('firebase', app, analytics);
-      firebase.firestore().collection('endpoints').get().then(doc => {
-        const endpoints = doc.docs[0].data().endpoints;
-        const ep = endpoints.find(e => !!window.location.hostname.match(e.key));
-        setBaseUrl(ep.val);
-        console.log('Endpoints', endpoints, ep);
-      });
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const analytics = getAnalytics();
+        console.log('firebase', app, analytics);
+
+        const querySnapshot = await getDocs(collection(db, 'endpoints'));
+        querySnapshot.forEach((doc) => {
+          const endpoints = doc.data().endpoints;
+          const ep = endpoints.find(e => !!window.location.hostname.match(e.key));
+          setBaseUrl(ep.val);
+          console.log(`${doc.id} => ${doc.data()}`);
+          console.log('Endpoints', endpoints, ep);
+        });
+      }
+      initApp();
     }
   }, [])
 
@@ -142,8 +154,8 @@ function HoroscopeForm(props) {
       header,
       description: horoscope,
       increment: interval,
-      startDate: new Date(startDate).toISOString(),
-      endDate: new Date(endDate).toISOString(),
+      startDate: format(new Date(startDate), 'yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\''),//new Date(startDate).toISOString(),
+      endDate: format(new Date(endDate), 'yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\''),//new Date(endDate).toISOString(),
       active: true,
       category: null
     }
@@ -169,35 +181,33 @@ function HoroscopeForm(props) {
       {errorMessage}
       <button type="button" class="btn-close" onClick={() => setErrorMessage(null)} data-bs-dismiss="alert" aria-label="Close"></button>
     </div> : <div></div>}
-    <div id="horoscope-fields">
-      <div className="form-group">
-        <label htmlFor="type-select" className="form-label">Type</label>
+    <div id="horoscope-fields" className="container">
+      {/* TODO implement grid */}
+      <div className="mb-3">
         <select id="type-select" className="form-select form-select-med" aria-label="Type select"
           onChange={(e) => setValue(setType, e)} value={type}>
-          {renderOptions(types)}
+          {renderOptions(types, false, 'Please Select a Type')}
         </select>
       </div>
-      <div className="form-group">
-        <label htmlFor="sign-select" className="form-label">Sign</label>
+      <div className="mb-3">
         <select id="sign-select" className="form-select form-select-med" aria-label="Sign select"
           onChange={(e) => setValue(setSign, e)} value={sign} >
-          {renderOptions(signs, true)}
+          {renderOptions(signs, true, 'Please Select a Zodiac Sign')}
         </select>
       </div>
-      <div className="form-group">
-        <label htmlFor="interval-select" className="form-label">Interval</label>
+      <div className="mb-3">
         <select id="interval-select" className="form-select form-select-med" aria-label="Interval select"
           onChange={(e) => setValue(setInterval, e)} value={interval}>
-          {renderOptions(intervals, true)}
+          {renderOptions(intervals, true, 'Please Select an Interval')}
         </select>
       </div>
       <div className="d-flex flex-row">
-        <div className="form-group">
+        <div className="mb-3">
           <label htmlFor="start-date" className="form-label">Start Date</label>
           <input type="datetime-local" className="form-control"
             onChange={(e) => setValue(setStartDate, e)} value={startDate} />
         </div>
-        <div className="form-group px-3">
+        <div className="mb-3 px-3">
           {!interval || interval == 'NONE' ?
             <div>
               <label htmlFor="end-date" className="form-label">End Date</label>
@@ -206,12 +216,12 @@ function HoroscopeForm(props) {
         </div>
       </div>
 
-      <div className="form-group">
+      <div className="mb-3">
         <label htmlFor="header-input" className="form-label">Header</label>
         <input id="header-input" className="form-control" maxLength="120"
           onChange={(e) => setValue(setHeader, e)} value={header} />
       </div>
-      <div className="form-group">
+      <div className="mb-3">
         <label htmlFor="horoscope-input" className="form-label">Horoscope</label>
         <textarea id="horoscope-input" className="form-control" maxLength="255"
           onChange={(e) => setValue(setHoroscope, e)} value={horoscope} />
@@ -230,7 +240,3 @@ function HoroscopeForm(props) {
     </div>
   </div>
 }
-
-const domContainer = document.querySelector('#horoscope-form');
-const root = ReactDOM.createRoot(domContainer);
-root.render(e(HoroscopeForm));
