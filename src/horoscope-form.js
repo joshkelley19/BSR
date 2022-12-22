@@ -21,7 +21,7 @@ const renderGridTypes = function renderGridTypes(gridTypesConfig, type, setGridT
     const configId = `grid-type-option-${config.val.toLowerCase()}`;
     return <React.Fragment key={`input-${configId}`}>
       <input type="radio" id={configId} className="btn-check" name="grid-type" autoComplete="off" />
-      <label className={`btn btn-${type == config.val ? '' : `outline-`}primary`} htmlFor={configId} onClick={() => setGridType(config.val)}>{config.textVal}</label>
+      <label className={`btn btn-${type === config.val ? '' : `outline-`}primary`} htmlFor={configId} onClick={() => setGridType(config.val)}>{config.textVal}</label>
     </React.Fragment>
   })
 }.bind(null, gridTypesConfig);
@@ -144,8 +144,9 @@ export const HoroscopeForm = (props) => {
       case 'ALL': getAllCategories(setTableFields, setTableValues, setErrorMessage, baseUrl); break;
       case 'APP': //TODO get categories for app
         break;
+      default:
     }
-  }, [type, gridType])
+  }, [type, gridType, baseUrl])
 
   async function submitHoroscope() {
     const body = {
@@ -208,7 +209,7 @@ export const HoroscopeForm = (props) => {
             onChange={(e) => setValue(setStartDate, e)} value={startDate} />
         </div>
         <div className="mb-3 px-3">
-          {!interval || interval == 'NONE' ?
+          {!interval || interval === 'NONE' ?
             <div>
               <label htmlFor="end-date" className="form-label">End Date</label>
               <input type="datetime-local" className="form-control"
