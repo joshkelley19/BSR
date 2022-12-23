@@ -197,7 +197,7 @@ export const HoroscopeForm = (props) => {
         break;
       default:
     }
-  }, [type, gridType, baseUrl, previewDate, previewSign])
+  }, [type, gridType, baseUrl, previewDate, previewSign, types])
 
   async function submitHoroscope() {
     const body = {
