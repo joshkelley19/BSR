@@ -53,11 +53,44 @@ async function getAllCategories(columnSetter, valueSetter, errorMessageSetter, b
   }
 }
 
+async function getHoroscopeBySignAndDate(sign, date, baseUrl) {
+  return fetch(`${baseUrl}/api/horoscope/sign/date`, {
+    method: 'POST',
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      types: null,
+      date,
+      sign
+    })
+  });
+}
+
+async function getCategoriesByTypeAndDate(types, date, baseUrl) {
+  return fetch(`${baseUrl}/api/horoscope/categories`, {
+    method: 'POST',
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      types,
+      date
+    })
+  });
+}
+
 function loadCategories(columnSetter, valueSetter, categories) {
   if (categories.length) {
     columnSetter(Object.keys(categories[0]));
     valueSetter(categories);
   }
+}
+
+function getRestDate(date) {
+  return format(new Date(date), 'yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'')
 }
 
 function renderOptions(options, upper, label) {
@@ -95,8 +128,10 @@ export const HoroscopeForm = (props) => {
     'Saturn', 'Jupiter', 'Uranus', 'Neptune', 'Pluto']);
   const [tableValues, setTableValues] = useState([]);
   const [tableFields, setTableFields] = useState([]);
-  const [startDate, setStartDate] = useState((new Date()));
+  const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
+  const [previewDate, setPreviewDate] = useState(new Date());
+  const [previewSign, setPreviewSign] = useState('');
   const [gridType, setGridType] = useState('CATEGORY');
   const [baseUrl, setBaseUrl] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
@@ -141,12 +176,28 @@ export const HoroscopeForm = (props) => {
         getAllCategoriesByType(type, setTableFields, setTableValues, setErrorMessage, baseUrl);
       }
         break;
-      case 'ALL': getAllCategories(setTableFields, setTableValues, setErrorMessage, baseUrl); break;
-      case 'APP': //TODO get categories for app
+      case 'ALL': getAllCategories(setTableFields, setTableValues, setErrorMessage, baseUrl);
+        break;
+      case 'APP': if (previewSign && previewDate) {
+        Promise.all([getHoroscopeBySignAndDate(previewSign, getRestDate(previewDate), baseUrl),
+        getCategoriesByTypeAndDate(types.slice(1), getRestDate(previewDate), baseUrl)])
+          .then(async resArray => {
+            const horoscopeRes = await resArray[0].json();
+            const categoryRes = await resArray[1].json();
+            //merge responses
+            loadCategories(setTableFields, setTableValues, [horoscopeRes, ...categoryRes]);
+          })
+          .catch(err => {
+            setErrorMessage(`Failed to load categories: ${err.toString()}`);
+            console.error('Error loading categories', err);
+          });
+      } else {
+        setErrorMessage('Be sure to select a sign and date to emulate an app display');
+      }
         break;
       default:
     }
-  }, [type, gridType, baseUrl])
+  }, [type, gridType, baseUrl, previewDate, previewSign])
 
   async function submitHoroscope() {
     const body = {
@@ -155,8 +206,8 @@ export const HoroscopeForm = (props) => {
       header,
       description: horoscope,
       increment: interval,
-      startDate: format(new Date(startDate), 'yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\''),//new Date(startDate).toISOString(),
-      endDate: format(new Date(endDate), 'yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\''),//new Date(endDate).toISOString(),
+      startDate: getRestDate(startDate),
+      endDate: getRestDate(endDate),
       active: true,
       category: null
     }
@@ -236,6 +287,20 @@ export const HoroscopeForm = (props) => {
     </div>
 
     <div id="horoscope-list">
+      {gridType === 'APP' ? <div id="preview-fields" className="row w-50">
+        <div className="col">
+          <label htmlFor="preview-date" className="form-label">Preview Date</label>
+          <input type="datetime-local" className="form-control"
+            onChange={(e) => setValue(setPreviewDate, e)} value={previewDate} />
+        </div>
+        <div className="col">
+          <label htmlFor="preview-sign-select" className="form-label">Sign</label>
+          <select id="preview-sign-select" className="form-select form-select-med" aria-label="Sign select"
+            onChange={(e) => setValue(setPreviewSign, e)} value={previewSign} >
+            {renderOptions(signs, true, 'Please Select a Zodiac Sign')}
+          </select>
+        </div>
+      </div> : ''}
       <HoroscopeGrid columns={tableFields} values={tableValues} blacklist={['id', 'name', 'active']}
         whitelist={['interval']} setCategory={setCategoryFormFields.bind(null, setSign, setInterval, setStartDate)} />
     </div>
