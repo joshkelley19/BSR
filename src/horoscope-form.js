@@ -1,106 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { initializeApp, getApps } from '@firebase/app';
-import { getAnalytics } from '@firebase/analytics';
-import { getDocs, collection, getFirestore } from '@firebase/firestore';
-import { format } from 'date-fns';
 import { HoroscopeGrid } from './grid';
-
-const gridTypesConfig = [{
-  textVal: 'Categories by type',
-  val: 'CATEGORY'
-}, {
-  textVal: 'All Categories',
-  val: 'ALL'
-}, {
-  textVal: 'App Preview',
-  val: 'APP'
-}]
-
-const renderGridTypes = function renderGridTypes(gridTypesConfig, type, setGridType) {
-  return gridTypesConfig.map(config => {
-    const configId = `grid-type-option-${config.val.toLowerCase()}`;
-    return <React.Fragment key={`input-${configId}`}>
-      <input type="radio" id={configId} className="btn-check" name="grid-type" autoComplete="off" />
-      <label className={`btn btn-${type === config.val ? '' : `outline-`}primary`} htmlFor={configId} onClick={() => setGridType(config.val)}>{config.textVal}</label>
-    </React.Fragment>
-  })
-}.bind(null, gridTypesConfig);
-
-function setValue(setFunction, event) {
-  setFunction(event.target.value);
-}
-
-// TODO convert to getCategoryUrl() with single categories loading and error message
-async function getAllCategoriesByType(type, columnSetter, valueSetter, errorMessageSetter, baseUrl) {
-  if (type) {
-    try {
-      const categories = await (await fetch(`${baseUrl}/api/horoscope/categories/${type}`)).json();
-      loadCategories(columnSetter, valueSetter, categories)
-    } catch (e) {
-      errorMessageSetter(`Failed to load categories: ${e.toString()}`);
-      console.error('Error loading categories', e);
-    }
-  }
-}
-
-async function getAllCategories(columnSetter, valueSetter, errorMessageSetter, baseUrl) {
-  try {
-    const categories = await (await fetch(`${baseUrl}/api/horoscope/categories/all`)).json();
-    loadCategories(columnSetter, valueSetter, categories);
-  } catch (e) {
-    errorMessageSetter(`Failed to load categories: ${e.toString()}`);
-    console.error('Error loading categories', e);
-  }
-}
-
-async function getHoroscopeBySignAndDate(sign, date, baseUrl) {
-  return fetch(`${baseUrl}/api/horoscope/sign/date`, {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      types: null,
-      date,
-      sign
-    })
-  });
-}
-
-async function getCategoriesByTypeAndDate(types, date, baseUrl) {
-  return fetch(`${baseUrl}/api/horoscope/categories`, {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      types,
-      date
-    })
-  });
-}
-
-function loadCategories(columnSetter, valueSetter, categories) {
-  if (categories.length) {
-    columnSetter(Object.keys(categories[0]));
-    valueSetter(categories);
-  }
-}
-
-function getRestDate(date) {
-  return format(new Date(date), 'yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'')
-}
-
-function renderOptions(options, upper, label) {
-  const optionsList = options.map((val, index) => {
-    return (<option key={index} value={upper ? val.toUpperCase() : val}>{val}</option>);
-  });
-  optionsList.unshift((<option id="select-placeholder" key="select-placeholder"> {label} </option>
-  ))
-  return optionsList;
-}
+import { renderOptions, setValue } from './services/form-service';
+import { renderGridTypes } from './services/grid-service';
+import { getAllCategories, getAllCategoriesByType, getCategoriesByTypeAndDate, getHoroscopeBySignAndDate, getRestDate, loadCategories, submitHoroscope } from './services/horoscope-service';
 
 function setCategoryFormFields(setSign, setInterval, setStartDate, category) {
   setSign(category.sign);
@@ -110,6 +12,10 @@ function setCategoryFormFields(setSign, setInterval, setStartDate, category) {
   console.log(startDate);
   setStartDate(startDate.toISOString().slice(0, -2));
   console.log('Category', category);
+}
+
+function submitHoroscopeForm(values, setters, baseUrl){
+  submitHoroscope(values, setters, baseUrl);
 }
 
 export const HoroscopeForm = (props) => {
@@ -133,54 +39,19 @@ export const HoroscopeForm = (props) => {
   const [previewDate, setPreviewDate] = useState(new Date());
   const [previewSign, setPreviewSign] = useState('');
   const [gridType, setGridType] = useState('CATEGORY');
-  const [baseUrl, setBaseUrl] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
-
-  useEffect(() => {
-    if (!getApps().length) {
-      const initApp = async () => {
-        // TODO import from file
-
-        const firebaseConfig = {
-          apiKey: "AIzaSyALkwYKFFoRCzuraR-_XV3sVvIAKzMkGrE",
-          authDomain: "becomingspirituallyrich-fe537.firebaseapp.com",
-          projectId: "becomingspirituallyrich-fe537",
-          storageBucket: "becomingspirituallyrich-fe537.appspot.com",
-          messagingSenderId: "462765930653",
-          appId: "1:462765930653:web:41ddaf1ea2e9ceb9f63c74",
-          measurementId: "G-MXLYN1XPGG"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const analytics = getAnalytics();
-        console.log('firebase', app, analytics);
-
-        const querySnapshot = await getDocs(collection(db, 'endpoints'));
-        querySnapshot.forEach((doc) => {
-          const endpoints = doc.data().endpoints;
-          const ep = endpoints.find(e => !!window.location.hostname.match(e.key));
-          setBaseUrl(ep.val);
-          console.log(`${doc.id} => ${doc.data()}`);
-          console.log('Endpoints', endpoints, ep);
-        });
-      }
-      initApp();
-    }
-  }, [])
 
   useEffect(() => {
     switch (gridType) {
       case 'CATEGORY': if (type) {
-        getAllCategoriesByType(type, setTableFields, setTableValues, setErrorMessage, baseUrl);
+        getAllCategoriesByType(type, setTableFields, setTableValues, setErrorMessage, props.baseUrl);
       }
         break;
-      case 'ALL': getAllCategories(setTableFields, setTableValues, setErrorMessage, baseUrl);
+      case 'ALL': getAllCategories(setTableFields, setTableValues, setErrorMessage, props.baseUrl);
         break;
       case 'APP': if (previewSign && previewDate) {
-        Promise.all([getHoroscopeBySignAndDate(previewSign, getRestDate(previewDate), baseUrl),
-        getCategoriesByTypeAndDate(types.slice(1), getRestDate(previewDate), baseUrl)])
+        Promise.all([getHoroscopeBySignAndDate(previewSign, getRestDate(previewDate), props.baseUrl),
+        getCategoriesByTypeAndDate(types.slice(1), getRestDate(previewDate), props.baseUrl)])
           .then(async resArray => {
             const horoscopeRes = await resArray[0].json();
             const categoryRes = await resArray[1].json();
@@ -197,44 +68,14 @@ export const HoroscopeForm = (props) => {
         break;
       default:
     }
-  }, [type, gridType, baseUrl, previewDate, previewSign, types])
-
-  async function submitHoroscope() {
-    const body = {
-      type,
-      sign,
-      header,
-      description: horoscope,
-      increment: interval,
-      startDate: getRestDate(startDate),
-      endDate: getRestDate(endDate),
-      active: true,
-      category: null
-    }
-    console.log('Submission', body);
-    try {
-      await fetch(`${baseUrl}/api/horoscope`, {
-        body: JSON.stringify(body),
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        method: 'POST',
-        mode: 'cors'
-      });
-      getAllCategoriesByType(type, setTableFields, setTableValues, setErrorMessage, baseUrl);
-    } catch (e) {
-      console.error('fetch error', e);
-    }
-  }
+  }, [type, gridType, props.baseUrl, previewDate, previewSign, types])
 
   return <div>
-    <h1 className="text-center">Becoming Spiritually Rich</h1>
     {errorMessage ? <div class="alert alert-danger alert-dismissible fade show" role="alert">
       {errorMessage}
       <button type="button" class="btn-close" onClick={() => setErrorMessage(null)} data-bs-dismiss="alert" aria-label="Close"></button>
     </div> : <div></div>}
     <div id="horoscope-fields" className="container">
-      {/* TODO implement grid */}
       <div className="mb-3">
         <select id="type-select" className="form-select form-select-med" aria-label="Type select"
           onChange={(e) => setValue(setType, e)} value={type}>
@@ -279,7 +120,19 @@ export const HoroscopeForm = (props) => {
           onChange={(e) => setValue(setHoroscope, e)} value={horoscope} />
       </div>
       <button type="button" className="btn btn-primary my-2"
-        onClick={() => submitHoroscope()}>Submit</button>
+        onClick={() => submitHoroscopeForm({
+          type,
+          sign,
+          header,
+          horoscope,
+          interval,
+          startDate,
+          endDate
+        }, {
+          setTableFields,
+          setTableValues,
+          setErrorMessage
+        }, props.baseUrl)}>Submit</button>
     </div>
 
     <div className="btn-group grid-type-selection" role="group" aria-label="Grid Types">
