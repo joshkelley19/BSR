@@ -8,7 +8,7 @@ const renderNavigationTabs = (props) => {
   return <ul className="nav nav-tabs">
     {props.tabConfig.map(tab =>
       <li className="nav-item">
-        <a className={`nav-link${tabIsActive(props.activeTab, tab.id) ? ' active' : ''}`} onClick={() => { props.setActiveTab(tab.id) }}>{tab.name}</a>
+        <button className={`nav-link${tabIsActive(props.activeTab, tab.id) ? ' active' : ''}`} onClick={() => { props.setActiveTab(tab.id) }}>{tab.name}</button>
       </li>)}
   </ul>
 }

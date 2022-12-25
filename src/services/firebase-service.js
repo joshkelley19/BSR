@@ -41,7 +41,7 @@ export const saveMarketing = async (db, marketing) => {
 }
 
 export const getMarketing = async (db) => {
-  const querySnapshot = await getDocs(collection(db, 'marketing'));
+  return await getDocs(collection(db, 'marketing'));
 }
 
 export const getAppCount = () => {
