@@ -71,9 +71,9 @@ export const HoroscopeForm = (props) => {
   }, [type, gridType, props.baseUrl, previewDate, previewSign, types])
 
   return <div>
-    {errorMessage ? <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {errorMessage ? <div className="alert alert-danger alert-dismissible fade show" role="alert">
       {errorMessage}
-      <button type="button" class="btn-close" onClick={() => setErrorMessage(null)} data-bs-dismiss="alert" aria-label="Close"></button>
+      <button type="button" className="btn-close" onClick={() => setErrorMessage(null)} data-bs-dismiss="alert" aria-label="Close"></button>
     </div> : <div></div>}
     <div id="horoscope-fields" className="container">
       <div className="mb-3">

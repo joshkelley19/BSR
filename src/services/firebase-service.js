@@ -28,7 +28,7 @@ export const getBaseUrl = async (db) => {
   let ep = '';
   querySnapshot.forEach((doc) => {
     const endpoints = doc.data().endpoints;
-    ep = endpoints.find(e => !!window.location.hostname.match(e.key));
+    ep = endpoints.find(e => !!window.location.hostname.match(e.key)).val;
   });
   return ep;
 }
