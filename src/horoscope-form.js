@@ -14,11 +14,11 @@ function setCategoryFormFields(setSign, setInterval, setStartDate, category) {
   console.log('Category', category);
 }
 
-function submitHoroscopeForm(values, setters, baseUrl){
+function submitHoroscopeForm(values, setters, baseUrl) {
   submitHoroscope(values, setters, baseUrl);
 }
 
-export const HoroscopeForm = (props) => {
+export const HoroscopeForm = ({ setErrorMessage, baseUrl, firebase }) => {
   const [sign, setSign] = useState('');
   const [header, setHeader] = useState('');
   const [horoscope, setHoroscope] = useState('');
@@ -39,19 +39,18 @@ export const HoroscopeForm = (props) => {
   const [previewDate, setPreviewDate] = useState(new Date());
   const [previewSign, setPreviewSign] = useState('');
   const [gridType, setGridType] = useState('CATEGORY');
-  const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
     switch (gridType) {
       case 'CATEGORY': if (type) {
-        getAllCategoriesByType(type, setTableFields, setTableValues, setErrorMessage, props.baseUrl);
+        getAllCategoriesByType(type, setTableFields, setTableValues, setErrorMessage, baseUrl);
       }
         break;
-      case 'ALL': getAllCategories(setTableFields, setTableValues, setErrorMessage, props.baseUrl);
+      case 'ALL': getAllCategories(setTableFields, setTableValues, setErrorMessage, baseUrl);
         break;
       case 'APP': if (previewSign && previewDate) {
-        Promise.all([getHoroscopeBySignAndDate(previewSign, getRestDate(previewDate), props.baseUrl),
-        getCategoriesByTypeAndDate(types.slice(1), getRestDate(previewDate), props.baseUrl)])
+        Promise.all([getHoroscopeBySignAndDate(previewSign, getRestDate(previewDate), baseUrl),
+        getCategoriesByTypeAndDate(types.slice(1), getRestDate(previewDate), baseUrl)])
           .then(async resArray => {
             const horoscopeRes = await resArray[0].json();
             const categoryRes = await resArray[1].json();
@@ -68,13 +67,9 @@ export const HoroscopeForm = (props) => {
         break;
       default:
     }
-  }, [type, gridType, props.baseUrl, previewDate, previewSign, types])
+  }, [type, gridType, baseUrl, previewDate, previewSign, types, setErrorMessage])
 
   return <div>
-    {errorMessage ? <div className="alert alert-danger alert-dismissible fade show" role="alert">
-      {errorMessage}
-      <button type="button" className="btn-close" onClick={() => setErrorMessage(null)} data-bs-dismiss="alert" aria-label="Close"></button>
-    </div> : <div></div>}
     <div id="horoscope-fields" className="container">
       <div className="mb-3">
         <select id="type-select" className="form-select form-select-med" aria-label="Type select"
@@ -132,7 +127,7 @@ export const HoroscopeForm = (props) => {
           setTableFields,
           setTableValues,
           setErrorMessage
-        }, props.baseUrl)}>Submit</button>
+        }, baseUrl)}>Submit</button>
     </div>
 
     <div className="btn-group grid-type-selection" role="group" aria-label="Grid Types">

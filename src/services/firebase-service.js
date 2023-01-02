@@ -2,6 +2,7 @@
 import { initializeApp, getApps } from '@firebase/app';
 import { getAnalytics } from '@firebase/analytics';
 import { getDocs, collection, getFirestore, doc, setDoc, getDoc } from '@firebase/firestore';
+import { signInWithEmailAndPassword, getAuth } from '@firebase/auth';
 
 export const initApp = async (setFirebase) => {
   // TODO import from file
@@ -46,4 +47,30 @@ export const getMarketing = async (db) => {
 
 export const getAppCount = () => {
   return getApps().length
+}
+
+export const login = (u, p, errorHandler) => {
+  signInWithEmailAndPassword(getAuth(), u, p)
+    .catch(err => {
+      console.error('Failed to login', err);
+      errorHandler(err);
+    });
+}
+
+export const signOut = () => {
+  getAuth().signOut();
+}
+
+export const checkAdmin = async (user, setIsAdmin, setErrorMessage) => {
+  const roleClaim = await user.getIdTokenResult();
+  const isAdmin = roleClaim.claims.roles.includes('ADMIN');
+  if(!isAdmin) {
+    setErrorMessage(`User ${user.displayName} does not have admin permissions`);
+    signOut();
+  }
+  setIsAdmin(isAdmin);
+}
+
+export const onAuthStateChanged = (next, error) => {
+  getAuth().onAuthStateChanged(next, error);
 }
