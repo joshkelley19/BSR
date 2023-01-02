@@ -30,7 +30,7 @@ function App() {
   const [firebase, setFirebase] = useState({});
   const [baseUrl, setBaseUrl] = useState('');
   const [activeTab, setActiveTab] = useState(tabConfig[0].id);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -57,8 +57,11 @@ function App() {
     <div className="App">
       <h1 className="text-center">
         Becoming Spiritually Rich - Admin
-        <button className="btn btn-danger m-2" onClick={() => { signOut() }}>Sign Out</button>
       </h1>
+      <h4 className="text-center">
+        {`Welcome ${user?.displayName}`}
+        <button className="btn btn-danger m-2" onClick={() => { signOut() }}>Sign Out</button>
+      </h4>
       {errorMessage ? <div className="alert alert-danger alert-dismissible fade show" role="alert">
         {errorMessage}
         <button type="button" className="btn-close" onClick={() => setErrorMessage('')} data-bs-dismiss="alert" aria-label="Close"></button>

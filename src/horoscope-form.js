@@ -67,7 +67,7 @@ export const HoroscopeForm = ({ setErrorMessage, baseUrl, firebase }) => {
         break;
       default:
     }
-  }, [type, gridType, baseUrl, previewDate, previewSign, types])
+  }, [type, gridType, baseUrl, previewDate, previewSign, types, setErrorMessage])
 
   return <div>
     <div id="horoscope-fields" className="container">
