@@ -9,9 +9,7 @@ function setCategoryFormFields(setSign, setInterval, setStartDate, category) {
   setInterval(category.interval);
   const startDate = new Date(category.endDate);
   startDate.setMinutes(startDate.getMinutes() + 1);
-  console.log(startDate);
   setStartDate(startDate.toISOString().slice(0, -2));
-  console.log('Category', category);
 }
 
 function submitHoroscopeForm(values, setters, baseUrl) {

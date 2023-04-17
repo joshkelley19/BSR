@@ -60,8 +60,8 @@ function App() {
       </h1>
       <h4 className="text-center">
         {user ? <>
-          `Welcome ${user?.displayName}`
-          < button className="btn btn-danger m-2" onClick={() => { signOut() }}>Sign Out</button>
+          `Welcome {user?.displayName || 'Admin'}`
+          <button className="btn btn-danger m-2" onClick={() => { signOut() }}>Sign Out</button>
         </>
           :
           'Sign In'
