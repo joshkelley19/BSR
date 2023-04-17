@@ -59,21 +59,30 @@ function App() {
         Becoming Spiritually Rich - Admin
       </h1>
       <h4 className="text-center">
-        {`Welcome ${user?.displayName}`}
-        <button className="btn btn-danger m-2" onClick={() => { signOut() }}>Sign Out</button>
+        {user ? <>
+          `Welcome ${user?.displayName}`
+          < button className="btn btn-danger m-2" onClick={() => { signOut() }}>Sign Out</button>
+        </>
+          :
+          'Sign In'
+        }
       </h4>
-      {errorMessage ? <div className="alert alert-danger alert-dismissible fade show" role="alert">
-        {errorMessage}
-        <button type="button" className="btn-close" onClick={() => setErrorMessage('')} data-bs-dismiss="alert" aria-label="Close"></button>
-      </div> : <div></div>}
-      {isAdmin ?
-        <div>
-          <Navigation activeTab={activeTab} setActiveTab={setActiveTab} tabConfig={tabConfig} />
-          {render(activeTab, firebase, baseUrl, setErrorMessage)}
-        </div>
-        :
-        <Auth setErrorMessage={setErrorMessage} />}
-    </div>
+      {
+        errorMessage ? <div className="alert alert-danger alert-dismissible fade show" role="alert">
+          {errorMessage}
+          <button type="button" className="btn-close" onClick={() => setErrorMessage('')} data-bs-dismiss="alert" aria-label="Close"></button>
+        </div> : <div></div>
+      }
+      {
+        isAdmin ?
+          <div>
+            <Navigation activeTab={activeTab} setActiveTab={setActiveTab} tabConfig={tabConfig} />
+            {render(activeTab, firebase, baseUrl, setErrorMessage)}
+          </div>
+          :
+          <Auth setErrorMessage={setErrorMessage} />
+      }
+    </div >
   );
 }
 

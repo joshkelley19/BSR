@@ -25,13 +25,17 @@ export const initApp = async (setFirebase) => {
 }
 
 export const getBaseUrl = async (db) => {
-  const querySnapshot = await getDocs(collection(db, 'endpoints'));
-  let ep = '';
-  querySnapshot.forEach((doc) => {
-    const endpoints = doc.data().endpoints;
-    ep = endpoints.find(e => !!window.location.hostname.match(e.key)).val;
-  });
-  return ep;
+  try {
+    const querySnapshot = await getDocs(collection(db, 'endpoints'));
+    let ep = '';
+    querySnapshot.forEach((doc) => {
+      const endpoints = doc.data().endpoints;
+      ep = endpoints.find(e => !!window.location.hostname.match(e.key)).val;
+    });
+    return ep;
+  } catch (e) {
+    return 'localhost:8080';
+  }
 }
 
 export const saveMarketing = async (db, marketing) => {
@@ -51,9 +55,12 @@ export const getAppCount = () => {
 
 export const login = (u, p, errorHandler) => {
   signInWithEmailAndPassword(getAuth(), u, p)
+    .then(res => {
+      console.log('Success Response', res);
+    })
     .catch(err => {
       console.error('Failed to login', err);
-      errorHandler(err);
+      errorHandler(err.code || JSON.stringify(err));
     });
 }
 
@@ -62,13 +69,17 @@ export const signOut = () => {
 }
 
 export const checkAdmin = async (user, setIsAdmin, setErrorMessage) => {
-  const roleClaim = await user.getIdTokenResult();
-  const isAdmin = roleClaim.claims.roles.includes('ADMIN');
-  if(!isAdmin) {
-    setErrorMessage(`User ${user.displayName} does not have admin permissions`);
-    signOut();
+  if (user) {
+    const roleClaim = await user.getIdTokenResult();
+    const isAdmin = roleClaim.claims.roles.includes('ADMIN');
+    if (!isAdmin) {
+      setErrorMessage(`User ${user.displayName} does not have admin permissions`);
+      signOut();
+    }
+    setIsAdmin(isAdmin);
+  } else {
+    setIsAdmin(false);
   }
-  setIsAdmin(isAdmin);
 }
 
 export const onAuthStateChanged = (next, error) => {
