@@ -9,16 +9,14 @@ function setCategoryFormFields(setSign, setInterval, setStartDate, category) {
   setInterval(category.interval);
   const startDate = new Date(category.endDate);
   startDate.setMinutes(startDate.getMinutes() + 1);
-  console.log(startDate);
   setStartDate(startDate.toISOString().slice(0, -2));
-  console.log('Category', category);
 }
 
 function submitHoroscopeForm(values, setters, baseUrl) {
   submitHoroscope(values, setters, baseUrl);
 }
 
-export const HoroscopeForm = ({ setErrorMessage, baseUrl, firebase }) => {
+export const HoroscopeForm = ({ setErrorMessage, baseUrl }) => {
   const [sign, setSign] = useState('');
   const [header, setHeader] = useState('');
   const [horoscope, setHoroscope] = useState('');
@@ -114,7 +112,7 @@ export const HoroscopeForm = ({ setErrorMessage, baseUrl, firebase }) => {
         <textarea id="horoscope-input" className="form-control" maxLength="255"
           onChange={(e) => setValue(setHoroscope, e)} value={horoscope} />
       </div>
-      <button type="button" className="btn btn-primary my-2"
+      <button type="button" className="btn btn-primary my-2" disabled={!type || !sign || !startDate}
         onClick={() => submitHoroscopeForm({
           type,
           sign,

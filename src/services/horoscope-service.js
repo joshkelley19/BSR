@@ -9,7 +9,7 @@ export const submitHoroscope = async (values, setters, baseUrl) => {
     description: horoscope,
     increment: interval,
     startDate: getRestDate(startDate),
-    endDate: getRestDate(endDate),
+    endDate: validInterval(interval) ? null : getRestDate(endDate),
     active: true,
     category: null
   }
@@ -24,6 +24,9 @@ export const submitHoroscope = async (values, setters, baseUrl) => {
   }
 }
 
+const validInterval = (interval) => {
+  return interval && interval !== 'NONE';
+}
 const saveHoroscope = async (baseUrl, body) => {
   const res = await fetch(`${baseUrl}/api/horoscope`, {
     body: JSON.stringify(body),

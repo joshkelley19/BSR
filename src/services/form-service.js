@@ -1,3 +1,5 @@
+import React from 'react';
+
 export const setValue = (setFunction, event) => {
   setFunction(event.target.value);
 }
