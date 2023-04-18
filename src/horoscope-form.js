@@ -112,7 +112,7 @@ export const HoroscopeForm = ({ setErrorMessage, baseUrl }) => {
         <textarea id="horoscope-input" className="form-control" maxLength="255"
           onChange={(e) => setValue(setHoroscope, e)} value={horoscope} />
       </div>
-      <button type="button" className="btn btn-primary my-2"
+      <button type="button" className="btn btn-primary my-2" disabled={!type || !sign || !startDate}
         onClick={() => submitHoroscopeForm({
           type,
           sign,

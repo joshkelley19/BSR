@@ -30,7 +30,7 @@ function App() {
   const [firebase, setFirebase] = useState<object>({});
   const [baseUrl, setBaseUrl] = useState('');
   const [activeTab, setActiveTab] = useState(tabConfig[0].id);
-  const [user, setUser] = useState<{displayName: string} | null>(null);
+  const [user, setUser] = useState<{ displayName: string } | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -39,7 +39,7 @@ function App() {
       const initialize = async () => {
         const fb = await initApp();
         setFirebase(fb);
-        onAuthStateChanged(async (user: {displayName: string}) => {
+        onAuthStateChanged(async (user: { displayName: string }) => {
           setUser(user);
           const url = await getBaseUrl(fb.db);
           setBaseUrl(url);
