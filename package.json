@@ -28,6 +28,12 @@
     "eject": "react-scripts eject",
     "lint": "npx eslint src/"
   },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
   "browserslist": {
     "production": [
       ">0.2%",
