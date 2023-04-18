@@ -4,7 +4,7 @@ import { getAnalytics } from '@firebase/analytics';
 import { getDocs, collection, getFirestore, doc, setDoc, getDoc } from '@firebase/firestore';
 import { signInWithEmailAndPassword, getAuth } from '@firebase/auth';
 
-export const initApp = async (setFirebase) => {
+export const initApp = async () => {
   // TODO import from file
 
   const firebaseConfig = {

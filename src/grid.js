@@ -17,7 +17,7 @@ function createGridConfig(columns, data, blacklist = [], whitelist = [], customM
   mappedColumns.unshift({
     id: 'select',
     name: 'select',
-    formatter: (cell, row, column) => h('button', {
+    formatter: (cell, row) => h('button', {
       className: 'btn btn-primary my-2',
       onClick: () => {
         row = row.toArray();

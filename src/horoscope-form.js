@@ -16,7 +16,7 @@ function submitHoroscopeForm(values, setters, baseUrl) {
   submitHoroscope(values, setters, baseUrl);
 }
 
-export const HoroscopeForm = ({ setErrorMessage, baseUrl, firebase }) => {
+export const HoroscopeForm = ({ setErrorMessage, baseUrl }) => {
   const [sign, setSign] = useState('');
   const [header, setHeader] = useState('');
   const [horoscope, setHoroscope] = useState('');

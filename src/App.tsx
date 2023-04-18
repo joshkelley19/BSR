@@ -16,21 +16,21 @@ const tabConfig = [{
   id: 'marketing'
 }]
 
-const render = (activeTab: string, firebase: any, baseUrl: string, setErrorMessage: React.Dispatch<React.SetStateAction<string>>) => {
+const render = (activeTab: string, firebase: object, baseUrl: string, setErrorMessage: React.Dispatch<React.SetStateAction<string>>) => {
   switch (activeTab) {
     case 'marketing':
       return <Marketing firebase={firebase} setErrorMessage={setErrorMessage} />
     case 'horoscopes':
     default:
-      return <HoroscopeForm firebase={firebase} baseUrl={baseUrl} setErrorMessage={setErrorMessage} />
+      return <HoroscopeForm baseUrl={baseUrl} setErrorMessage={setErrorMessage} />
   }
 }
 
 function App() {
-  const [firebase, setFirebase] = useState({});
+  const [firebase, setFirebase] = useState<object>({});
   const [baseUrl, setBaseUrl] = useState('');
   const [activeTab, setActiveTab] = useState(tabConfig[0].id);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{displayName: string} | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -39,13 +39,13 @@ function App() {
       const initialize = async () => {
         const fb = await initApp();
         setFirebase(fb);
-        onAuthStateChanged(async (user: any) => {
+        onAuthStateChanged(async (user: {displayName: string}) => {
           setUser(user);
           const url = await getBaseUrl(fb.db);
           setBaseUrl(url);
           checkAdmin(user, setIsAdmin, setErrorMessage);
         },
-          (err: any) => {
+          (err: Error) => {
             console.error('Error getting auth state: ', err);
           });
       }
