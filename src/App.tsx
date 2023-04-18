@@ -16,7 +16,7 @@ const tabConfig = [{
   id: 'marketing'
 }]
 
-const render = (activeTab: string, firebase: any, baseUrl: string, setErrorMessage: Function) => {
+const render = (activeTab: string, firebase: any, baseUrl: string, setErrorMessage: React.Dispatch<React.SetStateAction<string>>) => {
   switch (activeTab) {
     case 'marketing':
       return <Marketing firebase={firebase} setErrorMessage={setErrorMessage} />

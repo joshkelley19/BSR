@@ -25,7 +25,7 @@ export const submitHoroscope = async (values, setters, baseUrl) => {
 }
 
 const validInterval = (interval) => {
-  return interval && interval != 'NONE';
+  return interval && interval !== 'NONE';
 }
 const saveHoroscope = async (baseUrl, body) => {
   const res = await fetch(`${baseUrl}/api/horoscope`, {
