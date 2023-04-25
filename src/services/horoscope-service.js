@@ -13,11 +13,11 @@ export const submitHoroscope = async (values, setters, baseUrl) => {
     active: true,
     category: null
   }
-  console.log('Submission', body);
-  const { setTableFields, setTableValues, setErrorMessage } = setters;
+  const { setTableFields, setTableValues, setErrorMessage, toast } = setters;
   try {
     await saveHoroscope(baseUrl, body);
     getAllCategoriesByType(type, setTableFields, setTableValues, setErrorMessage, baseUrl);
+    toast(`Saved ${sign} ${type} entry successfully`, {type: 'success'});
   } catch (e) {
     console.error('fetch error', e);
     setErrorMessage(`Failed saving horoscope: `, e);
