@@ -7,5 +7,6 @@ Local Development:
 
 Run
 ```sh 
+yarn
 yarn start
 ```

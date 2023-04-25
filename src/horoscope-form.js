@@ -3,6 +3,8 @@ import { HoroscopeGrid } from './grid';
 import { renderOptions, setValue } from './services/form-service';
 import { renderGridTypes } from './services/grid-service';
 import { getAllCategories, getAllCategoriesByType, getCategoriesByTypeAndDate, getHoroscopeBySignAndDate, getRestDate, loadCategories, submitHoroscope } from './services/horoscope-service';
+import { ToastContainer, Zoom, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function setCategoryFormFields(setSign, setInterval, setStartDate, category) {
   setSign(category.sign);
@@ -124,8 +126,13 @@ export const HoroscopeForm = ({ setErrorMessage, baseUrl }) => {
         }, {
           setTableFields,
           setTableValues,
-          setErrorMessage
+          setErrorMessage,
+          toast
         }, baseUrl)}>Submit</button>
+        <ToastContainer
+          autoClose={10000}
+          transition={Zoom}
+        />
     </div>
 
     <div className="btn-group grid-type-selection" role="group" aria-label="Grid Types">
