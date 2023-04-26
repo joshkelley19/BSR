@@ -108,11 +108,13 @@ export const HoroscopeForm = ({ setErrorMessage, baseUrl }) => {
         <label htmlFor="header-input" className="form-label">Header</label>
         <input id="header-input" className="form-control" maxLength="120"
           onChange={(e) => setValue(setHeader, e)} value={header} />
+          <p className="form-text">{`${header.length}/120`}</p>
       </div>
       <div className="mb-3">
         <label htmlFor="horoscope-input" className="form-label">Horoscope</label>
         <textarea id="horoscope-input" className="form-control" maxLength="255"
           onChange={(e) => setValue(setHoroscope, e)} value={horoscope} />
+          <p className="form-text">{`${horoscope.length}/255`}</p>
       </div>
       <button type="button" className="btn btn-primary my-2" disabled={!type || !sign || !startDate}
         onClick={() => submitHoroscopeForm({
