@@ -26,7 +26,6 @@ function createGridConfig(columns, data, blacklist = [], whitelist = [], customM
   })
   return {
     columns: mappedColumns,
-    sort: true,
     data
   }
 }
@@ -54,6 +53,7 @@ export const HoroscopeGrid = ({ columns, values, blacklist, whitelist, setCatego
       <Grid
         data={processedValues}
         columns={processedColumns}
+        sort
         pagination={{
           limit: 20,
         }}
