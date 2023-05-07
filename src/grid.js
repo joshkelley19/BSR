@@ -9,7 +9,6 @@ function createGridConfig(columns, data, blacklist = [], whitelist = [], customM
   const mappedColumns = columns.filter(c => !blacklist.includes(c)).concat(whitelist).map(c => Object.assign({}, {
     id: c,
     name: c,
-    sort: true,
     formatter: (cell, row, column) => column.name === 'postings' ? html(`<div class="overflow-scroll grid-cell">${cell}</div?`) : cell
   },
     !!customMappers[c] && { data: customMappers[c] }));
@@ -54,6 +53,7 @@ export const HoroscopeGrid = ({ columns, values, blacklist, whitelist, setCatego
       <Grid
         data={processedValues}
         columns={processedColumns}
+        sort={true}
         pagination={{
           limit: 20,
         }}
