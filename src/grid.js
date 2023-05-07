@@ -9,7 +9,6 @@ function createGridConfig(columns, data, blacklist = [], whitelist = [], customM
   const mappedColumns = columns.filter(c => !blacklist.includes(c)).concat(whitelist).map(c => Object.assign({}, {
     id: c,
     name: c,
-    sort: true,
     formatter: (cell, row, column) => column.name === 'postings' ? html(`<div class="overflow-scroll grid-cell">${cell}</div?`) : cell
   },
     !!customMappers[c] && { data: customMappers[c] }));
@@ -27,6 +26,7 @@ function createGridConfig(columns, data, blacklist = [], whitelist = [], customM
   })
   return {
     columns: mappedColumns,
+    sort: true,
     data
   }
 }
