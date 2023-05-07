@@ -53,7 +53,7 @@ export const HoroscopeGrid = ({ columns, values, blacklist, whitelist, setCatego
       <Grid
         data={processedValues}
         columns={processedColumns}
-        sort
+        sort={true}
         pagination={{
           limit: 20,
         }}
